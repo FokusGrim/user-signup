@@ -1,64 +1,82 @@
-from flask import Flask, request, redirect, render_template, url_for
-import cgi
+from flask import Flask, request, redirect, render_template
 import os
-import re
+
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
+app.config['DEBUG'] = True      # displays runtime errors in the browser, too
 
-@app.route("/")
+
+
+
+@app.route("/", methods = ['GET', 'POST'])
 def index():
-    return render_template('index.html', title = "Sign Up")
+    username = request.args.get('username')
+    return render_template('user_form.html')
 
-@app.route("/signup", methods=['POST'])
-def signup():
+    username = ''
+    email = ''
 
-    username = request.form["username"]
-    password = request.form["password"]
-    verify = request.form["verify"]
-    email = request.form["email"]
+@app.route('/valid-input', methods = ['POST'])
+def valid_input():
 
-    username_error = ""
-    password_error = ""
-    verify_error = ""
-    email_error = ""
+    if request.method == 'POST':
 
-    if username == "": # Validate Username
-        username_error = "Please enter a valid username."
-    elif len(username) <= 3 or len(username) > 20:
-        username_error = "Username must be between 3 and 20 characters long."
-        username = ""
+        username = request.form['user-name']
+        password = request.form['password']
+        verify_pw = request.form['verify-pw']
+        email = request.form['email']
+
+        username_error = ''
+        password_error = ''
+        verify_pw_error = ''
+        email_error = ''
+
+
+
+    if not username:
+        username_error = 'You must create a username'
+    elif (len(username) < 3) or (len(username) > 20):
+        username_error = 'Username must be greater than 3 characters but less than 20'
     elif " " in username:
-        username_error = "Your username cannot contain any spaces."
-        username = ""
-
-    if password == "": # Validate Password
-        password_error = "Please enter a valid password."
-    elif len(password) < 3 or len(password) > 20:
-        password_error = "Password must be between 3 and 20 characters long."
-    elif " " in password:
-        password_error = "Your password cannot contain any spaces."
-
-    if verify == "" or verify != password: # Verify Password
-        verify_error = "Passwords do not match. Please try again."
-        verify = ""
-
-    if email != "": # Validate Email
-        # Used regex for complete email validation.
-        if not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-                email_error = "Not a valid email address."
-
-    if not username_error and not password_error and not verify_error and not email_error:
-        return render_template('welcome.html', username = username)
+        username_error = "Username must not have spaces"
     else:
-        return render_template(
-            'index.html',
-            username = username,
-            username_error = username_error,
-            password_error = password_error,
-            verify_error = verify_error,
-            email = email,
-            email_error = email_error
-            )
+        pass
+
+
+    if not password:
+        password_error = 'You must create a password'
+    elif (len(password) < 3) or (len(password) > 20):
+            password_error = 'Password must be greater than 3 characters but less than 20'
+    elif " " in password:
+            password_error = "Password must not have spaces"
+    else:
+        pass
+
+
+    if verify_pw != password:
+        verify_pw_error = 'Passwords must match'
+        password_error = 'Passwords must match'
+    else:
+        pass
+
+
+    if email != "":
+
+        if not "@" in email:
+            email_error = 'Not a valid email'
+        elif not "." in email:
+            email_error = 'Not a valid email'
+        elif " " in email:
+            email_error = 'Not a valid email'
+        elif (len(email) < 3) or (len(email) > 20):
+            email_error = 'Not a valid email'
+        else:
+            pass
+
+    if not username_error and not password_error and not verify_pw_error and not email_error:
+        return render_template('user_welcome.html', username=username)
+
+
+    return render_template('user_form.html', username_error=username_error, password_error=password_error, verify_pw_error=verify_pw_error, email_error=email_error)
 
 app.run()
