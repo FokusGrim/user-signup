@@ -1,7 +1,5 @@
 from flask import Flask, request, redirect, render_template
-import cgi
 import os
-import jinja2
 
 
 app = Flask(__name__)
@@ -12,9 +10,6 @@ app.config['DEBUG'] = True
 def index():
     username = request.args.get('username')
     return render_template('user_form.html')
-
-    username = ''
-    email = ''
 
 @app.route('/valid-input', methods = ['POST'])
 def valid_input():
@@ -45,6 +40,15 @@ def valid_input():
 
     if not password:
         password_error = 'You must create a password'
+    elif (len(password) < 3) or (len(password) > 20):
+            password_error = 'Password must be greater than 3 characters but less than 20'
+    elif " " in password:
+            password_error = "Password must not have spaces"
+    else:
+        pass
+
+    if not verify_pw:
+        verify_pw_error = 'You must verify a password'
     elif (len(password) < 3) or (len(password) > 20):
             password_error = 'Password must be greater than 3 characters but less than 20'
     elif " " in password:
